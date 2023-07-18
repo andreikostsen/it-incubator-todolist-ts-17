@@ -58,7 +58,7 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
     }, [])
 
     const changeFilter = useCallback(function (value: FilterValuesType, todolistId: string) {
-        const action = changeTodolistFilterAC(todolistId, value)
+        const action = changeTodolistFilterAC({id: todolistId, filter: value})
         dispatch(action)
     }, [])
 
@@ -88,6 +88,9 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
         <Grid container spacing={3}>
             {
                 todolists.map(tl => {
+
+debugger
+
                     let allTodolistTasks = tasks[tl.id]
 
                     return <Grid item key={tl.id}>
