@@ -11,6 +11,7 @@ import {AppRootStateType} from '../../app/store'
 import {setAppErrorAC, SetAppErrorActionType, setAppStatusAC, SetAppStatusActionType} from '../../app/app-reducer'
 import {handleServerAppError, handleServerNetworkError} from '../../utils/error-utils'
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {addTodolistAC, removeTodolistAC, setTodolistsAC} from "./todolists-reducer";
 
 const initialState: TasksStateType = {}
 
@@ -19,25 +20,62 @@ const slice = createSlice({
     name: "tasks",
     initialState: initialState,
     reducers: {
-        removeTaskAC(state, action: PayloadAction<{taskId: string, todolistId: string}>) {
-            return {...state, [action.payload.todolistId]: state[action.payload.todolistId].filter(t => t.id != action.payload.taskId)}
+        removeTaskAC(state, action: PayloadAction<{ taskId: string, todolistId: string }>) {
+
+
+            const tasks = state[action.payload.todolistId]
+
+            const index = tasks.findIndex(t=> t.id === action.payload.taskId)
+
+            if(index > -1) {tasks.splice(index, 1)}
+
+            // return {
+            //     ...state,
+            //     [action.payload.todolistId]: state[action.payload.todolistId].filter(t => t.id != action.payload.taskId)
+            // }
         },
-       addTaskAC(state, action: PayloadAction<{task: TaskType}>){
-           return {...state, [action.payload.task.todoListId]: [action.payload.task, ...state[action.payload.task.todoListId]]}
-       },
-        updateTaskAC(state, action: PayloadAction<{taskId: string, model: UpdateDomainTaskModelType, todolistId: string}>) {
-            return {
-                ...state,
-                [action.payload.todolistId]: state[action.payload.todolistId]
-                    .map(t => t.id === action.payload.taskId ? {...t, ...action.payload.model} : t)
+        addTaskAC(state, action: PayloadAction<{ task: TaskType }>) {
+             state[action.payload.task.todoListId].unshift(action.payload.task)
+
+            // return {
+            //     ...state,
+            //     [action.payload.task.todoListId]: [action.payload.task, ...state[action.payload.task.todoListId]]
+            // }
+        },
+        updateTaskAC(state, action: PayloadAction<{ taskId: string, model: UpdateDomainTaskModelType, todolistId: string }>) {
+
+            const tasks = state[action.payload.todolistId]
+            const index = tasks.findIndex(t=>t.id === action.payload.taskId)
+            if(index > -1) {
+                tasks[index] = {...tasks[index],...action.payload.model}
             }
+
+            // return {
+            //     ...state,
+            //     [action.payload.todolistId]: state[action.payload.todolistId]
+            //         .map(t => t.id === action.payload.taskId ? {...t, ...action.payload.model} : t)
+            // }
         },
-     setTasksAC(state, action: PayloadAction<{tasks: Array<TaskType>, todolistId: string}>) {
-         return {...state, [action.payload.todolistId]: action.payload.tasks}
-     }
+        setTasksAC(state, action: PayloadAction<{ tasks: Array<TaskType>, todolistId: string }>) {
+
+            state[action.payload.todolistId] = action.payload.tasks
 
 
+        },
+    },
+
+    extraReducers: (builder) => {
+        builder.addCase(addTodolistAC, (state, action) => {
+            state[action.payload.todolist.id] = []
+        });
+        builder.addCase(removeTodolistAC, (state, action) => {
+            delete state[action.payload.id]
+        });
+        builder.addCase(setTodolistsAC, (state, action) => {
+            action.payload.todolists.forEach(tl => state[tl.id] = [])
+        });
     }
+
 
 })
 
@@ -47,6 +85,9 @@ export const removeTaskAC = slice.actions.removeTaskAC
 export const addTaskAC = slice.actions.addTaskAC
 export const updateTaskAC = slice.actions.updateTaskAC
 export const setTasksAC = slice.actions.setTasksAC
+// export const addTodolistAC = slice.actions.addTodolistAC
+// export const removeTodolistAC = slice.actions.removeTodolistAC
+// export const setTodolistAC = slice.actions.setTodolistAC
 
 
 
@@ -179,30 +220,28 @@ export type UpdateDomainTaskModelType = {
 export type TasksStateType = {
     [key: string]: Array<TaskType>
 }
-
-type AddTodolistActionType = {
-    type: 'ADD-TODOLIST',
-    todolist: TodolistType
-}
-
-type RemoveTodolistActionType = {
-    type: 'REMOVE-TODOLIST',
-    id: string
-
-}
-type SetTodolistsActionType = {
-
-    type: 'SET-TODOLISTS',
-    todolists: TodolistType[]
-}
+//
+// type AddTodolistActionType = {
+//     type: 'ADD-TODOLIST',
+//     todolist: TodolistType
+// }
+//
+// type RemoveTodolistActionType = {
+//     type: 'REMOVE-TODOLIST',
+//     id: string
+//
+// }
+// type SetTodolistsActionType = {
+//
+//     type: 'SET-TODOLISTS',
+//     todolists: TodolistType[]
+// }
 
 
 type ActionsType =
     | ReturnType<typeof removeTaskAC>
     | ReturnType<typeof addTaskAC>
     | ReturnType<typeof updateTaskAC>
-    | AddTodolistActionType
-    | RemoveTodolistActionType
-    | SetTodolistsActionType
+
     | ReturnType<typeof setTasksAC>
 type ThunkDispatch = Dispatch<ActionsType | SetAppStatusActionType | SetAppErrorActionType>

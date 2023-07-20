@@ -89,7 +89,7 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
             {
                 todolists.map(tl => {
 
-debugger
+
 
                     let allTodolistTasks = tasks[tl.id]
 

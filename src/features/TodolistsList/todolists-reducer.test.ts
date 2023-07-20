@@ -73,6 +73,7 @@ test('todolists should be added', () => {
     const endState = todolistsReducer([], action)
 
     expect(endState.length).toBe(2)
+    expect(endState[0].title).toBe('What to learn')
 })
 test('correct entity status of todolist should be changed', () => {
     let newStatus: RequestStatusType = 'loading'
